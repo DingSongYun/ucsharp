@@ -1,10 +1,23 @@
 #pragma once
 
+#include "Modules/ModuleManager.h"
 #include "CoreMinimal.h"
 #include "Engine/Engine.h"
 #include "Tests/AutomationCommon.h"
 #include "Misc/AutomationTest.h"
 #include "UCSharp.h"
+
+
+/**
+ * UCSharp自动化测试模块
+ * 负责加载和初始化UCSharp插件
+ */
+class FUCSharpAutomationTestModule : public IModuleInterface
+{
+public:
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+};
 
 /**
  * UCSharp自动化测试基类
@@ -55,44 +68,41 @@ protected:
     bool TestCSharpMethodCall(UObject* Object, const FString& MethodName, const TArray<FString>& Parameters);
 };
 
+#define IMPLEMENT_UCSHARP_AUTOMATION_TEST( TClass, PrettyName) \
+    IMPLEMENT_CUSTOM_SIMPLE_AUTOMATION_TEST(TClass, FUCSharpTestBase, PrettyName, EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+
 /**
  * UCSharp核心功能测试
  */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUCSharpCoreTest, "UCSharp.Core.BasicFunctionality", 
-    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+IMPLEMENT_UCSHARP_AUTOMATION_TEST(FUCSharpCoreTest, "UCSharp.Core.BasicFunctionality")
 
 /**
  * UCSharp UObject绑定测试
  */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUCSharpUObjectBindingTest, "UCSharp.Core.UObjectBinding", 
-    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+IMPLEMENT_UCSHARP_AUTOMATION_TEST(FUCSharpUObjectBindingTest, "UCSharp.Core.UObjectBinding")
 
 /**
  * UCSharp Actor创建和生命周期测试
  */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUCSharpActorLifecycleTest, "UCSharp.Core.ActorLifecycle", 
-    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+IMPLEMENT_UCSHARP_AUTOMATION_TEST(FUCSharpActorLifecycleTest, "UCSharp.Core.ActorLifecycle")
 
 /**
  * UCSharp属性访问测试
  */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUCSharpPropertyAccessTest, "UCSharp.Core.PropertyAccess", 
-    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+IMPLEMENT_UCSHARP_AUTOMATION_TEST(FUCSharpPropertyAccessTest, "UCSharp.Core.PropertyAccess")
 
 /**
  * UCSharp方法调用测试
  */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUCSharpMethodCallTest, "UCSharp.Core.MethodCall", 
-    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+IMPLEMENT_UCSHARP_AUTOMATION_TEST(FUCSharpMethodCallTest, "UCSharp.Core.MethodCall")
 
 /**
  * UCSharp内存管理测试
  */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUCSharpMemoryManagementTest, "UCSharp.Performance.MemoryManagement", 
-    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+IMPLEMENT_UCSHARP_AUTOMATION_TEST(FUCSharpMemoryManagementTest, "UCSharp.Performance.MemoryManagement")
 
 /**
  * UCSharp性能测试
  */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUCSharpPerformanceTest, "UCSharp.Performance.Benchmarks", 
-    EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+IMPLEMENT_UCSHARP_AUTOMATION_TEST(FUCSharpPerformanceTest, "UCSharp.Performance.Benchmarks")

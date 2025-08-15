@@ -7,6 +7,16 @@
 #include "LevelEditor.h"
 #include "UCSharp.h"
 
+IMPLEMENT_MODULE(FUCSharpAutomationTestModule, UCSharpAutomationTest)
+
+void FUCSharpAutomationTestModule::StartupModule()
+{
+}
+
+void FUCSharpAutomationTestModule::ShutdownModule()
+{
+}
+
 // UCSharp测试基类实现
 void FUCSharpTestBase::SetUp()
 {
@@ -139,7 +149,8 @@ bool FUCSharpActorLifecycleTest::RunTest(const FString& Parameters)
     SetUp();
     
     // 获取测试世界
-    UWorld* TestWorld = AutomationEditorCommonUtils::CreateNewMap();
+    //UWorld* TestWorld = AutomationEditorCommonUtils::CreateNewMap();
+    UWorld* TestWorld = nullptr;
     TestNotNull("Test world should be created", TestWorld);
     
     if (TestWorld)
@@ -184,7 +195,7 @@ bool FUCSharpPropertyAccessTest::RunTest(const FString& Parameters)
 }
 
 // UCSharp方法调用测试
-bool FUCSharpMethodCallTest::RunTest(const FString& Parameters)
+bool FUCSharpMethodCallTest::RunTest(const FString& InParameters)
 {
     SetUp();
     

@@ -6,22 +6,28 @@ public class UCSharpProject : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { 
-			"Core", 
-			"CoreUObject", 
-			"Engine", 
-			"InputCore",
-			"UCSharp",
-			"AutomationController",
-			"UnrealEd"
-		});
+		PublicDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"Core",
+				"CoreUObject",
+				"Engine",
+				"InputCore",
+				"UCSharp",
+				"AutomationController",
+				"UnrealEd"
+			}
+		);
 
-		PrivateDependencyModuleNames.AddRange(new string[] { 
-			"ToolMenus",
-			"EditorStyle",
-			"EditorWidgets",
-			"FunctionalTesting"
-		});
+		PrivateDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"ToolMenus",
+				"EditorStyle",
+				"EditorWidgets",
+				"FunctionalTesting"
+			}
+		);
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

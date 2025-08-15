@@ -25,6 +25,10 @@
 			"Type": "Editor",
 			"LoadingPhase": "Default"
 		},
-
+		{
+			"Name": "UCSharpAutomationTest",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
 	]
 }
