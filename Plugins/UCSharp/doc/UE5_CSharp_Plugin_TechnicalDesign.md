@@ -276,6 +276,7 @@ UCSharpPlugin/
 │   └── UCSharpCodeGen/          # 代码生成模块
 ├── Content/
 │   └── Scripts/                 # C#脚本目录
+│   └── Tools/                   # 自动化测试工具目录
 ├── Binaries/
 │   └── DotNet/                  # .NET运行时
 └── UCSharpPlugin.uplugin        # 插件描述文件

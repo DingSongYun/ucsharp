@@ -128,7 +128,7 @@ jobs:
     
     - name: Package Plugin
       run: |
-        powershell -File Scripts/PackagePlugin.ps1 -Configuration ${{ matrix.configuration }}
+        powershell -File Tools/PackagePlugin.ps1 -Configuration ${{ matrix.configuration }}
     
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
@@ -172,7 +172,7 @@ jobs:
     
     - name: Package Plugin
       run: |
-        bash Scripts/PackagePlugin.sh ${{ matrix.configuration }}
+        bash Tools/PackagePlugin.sh ${{ matrix.configuration }}
     
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
@@ -207,7 +207,7 @@ jobs:
 ### 2.2 打包脚本
 
 ```powershell
-# Scripts/PackagePlugin.ps1
+# Tools/PackagePlugin.ps1
 param(
     [Parameter(Mandatory=$true)]
     [string]$Configuration,

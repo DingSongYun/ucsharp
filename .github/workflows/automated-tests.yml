@@ -82,7 +82,7 @@ jobs:
     
     - name: Run UCSharp Automation Tests
       run: |
-        cd Plugins/UCSharp/Scripts
+        cd Plugins/UCSharp/Tools
         .\RunAutomationTests.ps1 -CIMode -GenerateReport -Verbose
       shell: pwsh
       

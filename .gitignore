@@ -48,6 +48,9 @@ Thumbs.db
 
 # Package files
 *.7z
+
+# Test Results
+TestResults/
 *.dmg
 *.gz
 *.iso
