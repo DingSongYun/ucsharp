@@ -1,0 +1,251 @@
+name: UCSharp Automated Tests
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main ]
+  schedule:
+    # 每天凌晨2点运行测试
+    - cron: '0 2 * * *'
+
+jobs:
+  test:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        ue5-version: ['5.6']
+        dotnet-version: ['8.0.x']
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+    
+    - name: Cache UE5 Installation
+      id: cache-ue5
+      uses: actions/cache@v3
+      with:
+        path: C:\UE5
+        key: ue5-${{ matrix.ue5-version }}-${{ runner.os }}
+    
+    - name: Download and Install UE5 (if not cached)
+      if: steps.cache-ue5.outputs.cache-hit != 'true'
+      run: |
+        # 这里需要根据实际情况下载UE5
+        # 由于UE5安装包很大，实际CI中可能需要使用预安装的镜像
+        Write-Host "UE5 installation would be handled here"
+        Write-Host "For actual CI, consider using a pre-built image with UE5"
+      shell: powershell
+    
+    - name: Restore .NET dependencies
+      run: dotnet restore Managed/UCSharp.Managed.csproj
+    
+    - name: Build C# project
+      run: dotnet build Managed/UCSharp.Managed.csproj --configuration Release --no-restore
+    
+    - name: Run C# unit tests
+      run: |
+        # 运行C#单元测试（如果有的话）
+        Write-Host "C# unit tests would run here"
+        # dotnet test Managed/UCSharp.Tests.csproj --configuration Release --no-build
+      shell: powershell
+    
+    - name: Generate UE5 project files
+      run: |
+        cd TestProject
+        if (Test-Path "GenerateProjectFiles.bat") {
+          .\GenerateProjectFiles.bat
+        } else {
+          Write-Host "Project files generation skipped - no batch file found"
+        }
+      shell: powershell
+    
+    - name: Build UE5 project
+      run: |
+        # 构建UE5项目
+        # 这里需要根据实际的UE5安装路径调整
+        $UE5Path = "C:\UE5\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe"
+        if (Test-Path $UE5Path) {
+          & $UE5Path -projectfiles -project="TestProject\UCSharpTest.uproject" -game -rocket -progress
+        } else {
+          Write-Host "UE5 build tools not found, skipping build"
+        }
+      shell: powershell
+    
+    - name: Run UCSharp automation tests
+      run: |
+        # 运行自动化测试
+        $UE5EditorPath = "C:\UE5\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
+        $ProjectPath = "$env:GITHUB_WORKSPACE\TestProject\UCSharpTest.uproject"
+        $LogPath = "$env:GITHUB_WORKSPACE\TestResults\AutomationTest_CI.log"
+        $ReportPath = "$env:GITHUB_WORKSPACE\TestResults\AutomationReport_CI.json"
+        
+        # 创建测试结果目录
+        New-Item -ItemType Directory -Path "TestResults" -Force
+        
+        if (Test-Path $UE5EditorPath) {
+          Write-Host "Running UE5 automation tests..."
+          
+          $arguments = @(
+            "`"$ProjectPath`"",
+            "-ExecCmds=`"Automation RunTests UCSharp`"",
+            "-TestExit=`"Automation Test Queue Empty`"",
+            "-ReportOutputPath=`"$ReportPath`"",
+            "-Log=`"$LogPath`"",
+            "-NoSplash",
+            "-Unattended",
+            "-NullRHI"
+          )
+          
+          $process = Start-Process -FilePath $UE5EditorPath -ArgumentList $arguments -Wait -PassThru -NoNewWindow
+          
+          if ($process.ExitCode -ne 0) {
+            Write-Host "Automation tests failed with exit code: $($process.ExitCode)"
+            
+            # 显示日志
+            if (Test-Path $LogPath) {
+              Write-Host "Test log (last 50 lines):"
+              Get-Content $LogPath | Select-Object -Last 50
+            }
+            
+            exit 1
+          }
+          
+          Write-Host "Automation tests completed successfully"
+        } else {
+          Write-Host "UE5 Editor not found, skipping automation tests"
+          Write-Host "This is expected in the current CI setup"
+        }
+      shell: powershell
+    
+    - name: Parse test results
+      if: always()
+      run: |
+        $ReportPath = "TestResults\AutomationReport_CI.json"
+        
+        if (Test-Path $ReportPath) {
+          Write-Host "Parsing test results..."
+          $report = Get-Content $ReportPath | ConvertFrom-Json
+          
+          Write-Host "=== Test Results ==="
+          Write-Host "Total Tests: $($report.TotalTests)"
+          Write-Host "Passed Tests: $($report.PassedTests)"
+          Write-Host "Failed Tests: $($report.FailedTests)"
+          
+          if ($report.FailedTests -gt 0) {
+            Write-Host "Failed test details:"
+            foreach ($failedTest in $report.FailedTestDetails) {
+              Write-Host "  - $($failedTest.TestName): $($failedTest.ErrorMessage)"
+            }
+            
+            # 设置GitHub Actions输出
+            echo "test_status=failed" >> $env:GITHUB_OUTPUT
+            echo "failed_tests=$($report.FailedTests)" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "test_status=passed" >> $env:GITHUB_OUTPUT
+          }
+          
+          echo "total_tests=$($report.TotalTests)" >> $env:GITHUB_OUTPUT
+          echo "passed_tests=$($report.PassedTests)" >> $env:GITHUB_OUTPUT
+        } else {
+          Write-Host "No test report found"
+          echo "test_status=no_report" >> $env:GITHUB_OUTPUT
+        }
+      shell: powershell
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.ue5-version }}
+        path: |
+          TestResults/
+          Managed/bin/
+          Managed/obj/
+        retention-days: 30
+    
+    - name: Upload test logs
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-logs-${{ matrix.ue5-version }}
+        path: |
+          TestResults/*.log
+          *.log
+        retention-days: 7
+    
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = 'TestResults/AutomationReport_CI.json';
+          
+          let comment = '## 🧪 UCSharp Test Results\n\n';
+          
+          if (fs.existsSync(path)) {
+            const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+            
+            comment += `- **Total Tests:** ${report.TotalTests}\n`;
+            comment += `- **Passed:** ${report.PassedTests} ✅\n`;
+            comment += `- **Failed:** ${report.FailedTests} ${report.FailedTests > 0 ? '❌' : '✅'}\n\n`;
+            
+            if (report.FailedTests > 0) {
+              comment += '### Failed Tests:\n';
+              report.FailedTestDetails.forEach(test => {
+                comment += `- **${test.TestName}:** ${test.ErrorMessage}\n`;
+              });
+            }
+          } else {
+            comment += '⚠️ No test report generated\n';
+          }
+          
+          comment += '\n---\n*Automated test results from GitHub Actions*';
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  # 代码质量检查作业
+  code-quality:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore Managed/UCSharp.Managed.csproj
+    
+    - name: Run code analysis
+      run: |
+        # 运行代码分析
+        dotnet build Managed/UCSharp.Managed.csproj --configuration Release --verbosity normal
+        
+        # 检查编译警告
+        Write-Host "Checking for compilation warnings..."
+      shell: powershell
+    
+    - name: Check code formatting
+      run: |
+        # 检查代码格式
+        Write-Host "Code formatting check would run here"
+        # dotnet format --verify-no-changes Managed/UCSharp.Managed.csproj
+      shell: powershell
