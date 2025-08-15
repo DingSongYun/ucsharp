@@ -80,51 +80,41 @@ jobs:
         }
       shell: powershell
     
-    - name: Run UCSharp automation tests
+    - name: Run UCSharp Automation Tests
       run: |
-        # 运行自动化测试
-        $UE5EditorPath = "C:\UE5\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
-        $ProjectPath = "$env:GITHUB_WORKSPACE\TestProject\UCSharpTest.uproject"
-        $LogPath = "$env:GITHUB_WORKSPACE\TestResults\AutomationTest_CI.log"
-        $ReportPath = "$env:GITHUB_WORKSPACE\TestResults\AutomationReport_CI.json"
+        cd Plugins/UCSharp/Scripts
+        .\RunAutomationTests.ps1 -CIMode -GenerateReport -Verbose
+      shell: pwsh
+      
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.ue5-version }}
+        path: |
+          TestResults/
+          *.log
+        retention-days: 30
         
-        # 创建测试结果目录
-        New-Item -ItemType Directory -Path "TestResults" -Force
+    - name: Upload Test Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports-${{ matrix.ue5-version }}
+        path: |
+          TestResults/Reports/
+          TestResults/*.html
+          TestResults/*.xml
+        retention-days: 30
         
-        if (Test-Path $UE5EditorPath) {
-          Write-Host "Running UE5 automation tests..."
-          
-          $arguments = @(
-            "`"$ProjectPath`"",
-            "-ExecCmds=`"Automation RunTests UCSharp`"",
-            "-TestExit=`"Automation Test Queue Empty`"",
-            "-ReportOutputPath=`"$ReportPath`"",
-            "-Log=`"$LogPath`"",
-            "-NoSplash",
-            "-Unattended",
-            "-NullRHI"
-          )
-          
-          $process = Start-Process -FilePath $UE5EditorPath -ArgumentList $arguments -Wait -PassThru -NoNewWindow
-          
-          if ($process.ExitCode -ne 0) {
-            Write-Host "Automation tests failed with exit code: $($process.ExitCode)"
-            
-            # 显示日志
-            if (Test-Path $LogPath) {
-              Write-Host "Test log (last 50 lines):"
-              Get-Content $LogPath | Select-Object -Last 50
-            }
-            
-            exit 1
-          }
-          
-          Write-Host "Automation tests completed successfully"
-        } else {
-          Write-Host "UE5 Editor not found, skipping automation tests"
-          Write-Host "This is expected in the current CI setup"
-        }
-      shell: powershell
+    - name: Publish Test Results
+      if: always()
+      uses: dorny/test-reporter@v1
+      with:
+        name: UCSharp Tests (${{ matrix.ue5-version }})
+        path: TestResults/junit-results.xml
+        reporter: java-junit
+        fail-on-error: true
     
     - name: Parse test results
       if: always()
