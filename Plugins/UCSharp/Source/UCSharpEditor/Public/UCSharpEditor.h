@@ -66,8 +66,7 @@ private:
 	/** Unregister menu extensions */
 	void UnregisterMenuExtensions();
 
-	/** Create C# menu entries */
-	void CreateCSharpMenuEntries(FMenuBuilder& MenuBuilder);
+
 
 	/** Command callbacks */
 	void OnOpenCSharpEditor();

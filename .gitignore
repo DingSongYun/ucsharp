@@ -1,88 +1,97 @@
-# Unreal Engine files
-Bindings/
-Binaries/
-DerivedDataCache/
-Intermediate/
-Saved/
-.vs/
-*.tmp
-*.log
-*.sln
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
 # Visual Studio files
-.vscode/
-*.vcxproj
-*.vcxproj.filters
+.vs/
+*.user
+*.suo
+*.sdf
+*.opensdf
 *.vcxproj.user
 
-# .NET files
-bin/
-obj/
+# Unreal Engine files
+Binaries/
+Intermediate/
+DerivedDataCache/
+Saved/
+*.tmp
+*.log
+
+# Build files
+*.obj
+*.pch
+*.pdb
+*.idb
+*.ilk
+*.meta
+*.tlog
+*.lastbuildstate
+*.iobj
+*.ipdb
+*.exp
+*.lib
 *.dll
 *.exe
-*.pdb
-*.cache
-packages/
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Test project specific
-TestProject/Binaries/
-TestProject/Intermediate/
-TestProject/Saved/
-TestProject/.vs/
-TestProject/DerivedDataCache/
-TestProject/*.sln
-TestProject/*.vcxproj
-TestProject/*.vcxproj.filters
-TestProject/*.vcxproj.user
-TestProject/Plugins/UCSharp/
-
-# Managed project build outputs
-Managed/bin/
-Managed/obj/
-Managed/Binaries/
-
-# History and backup files
+# History files
 .history/
-*.backup
-*.orig
-
-# Test results
-TestResults/
-*.trx
-*.coverage
-*.coveragexml
-
-# Temporary files
-*.tmp
-*.temp
-*.swp
-*.bak
-*~
 
 # IDE files
-.idea/
-*.iml
-*.ipr
-*.iws
+.vscode/
+*.code-workspace
 
-# Build tools
-*.msbuildlog
-*.binlog
+# OS files
+Thumbs.db
+.DS_Store
 
-# UE5 specific ignores
-*.uasset
-*.umap
-*.upk
-*.udk
-*.uplugin.bak
+# Temporary files
+*.swp
+*.swo
+*~
 
-# Plugin junction links (to avoid circular references)
-TestProject/Plugins/UCSharp
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# node_modules
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# Trae AI files
+.trae/

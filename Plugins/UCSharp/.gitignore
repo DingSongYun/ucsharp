@@ -1,0 +1,88 @@
+# Unreal Engine files
+Bindings/
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+*.tmp
+*.log
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio files
+.vscode/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# .NET files
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+packages/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test project specific
+TestProject/Binaries/
+TestProject/Intermediate/
+TestProject/Saved/
+TestProject/.vs/
+TestProject/DerivedDataCache/
+TestProject/*.sln
+TestProject/*.vcxproj
+TestProject/*.vcxproj.filters
+TestProject/*.vcxproj.user
+TestProject/Plugins/UCSharp/
+
+# Managed project build outputs
+Managed/bin/
+Managed/obj/
+Managed/Binaries/
+
+# History and backup files
+.history/
+*.backup
+*.orig
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.bak
+*~
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Build tools
+*.msbuildlog
+*.binlog
+
+# UE5 specific ignores
+*.uasset
+*.umap
+*.upk
+*.udk
+*.uplugin.bak
+
+# Plugin junction links (to avoid circular references)
+TestProject/Plugins/UCSharp

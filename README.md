@@ -1,188 +1,124 @@
-# UCSharp - C# Scripting Support for Unreal Engine 5
+# UCSharp Test Project
 
-## Project Overview
+这是一个用于测试UCSharp插件的UE5测试项目。
 
-UCSharp is a plugin that enables C# scripting support in Unreal Engine 5, providing seamless integration between C# code and UE5's native systems including UObject, UFunction, and UProperty.
-
-## Current Status: Phase 1 - Prototype Development
-
-### Milestone M1.1: Development Environment Setup ✅
-
-The basic project structure and development environment has been established:
-
-- ✅ UE5 Plugin structure (`UCSharp.uplugin`)
-- ✅ C++ Runtime module (`UCSharp`)
-- ✅ C++ Editor module (`UCSharpEditor`)
-- ✅ C# Managed library (`UCSharp.Managed`)
-- ✅ Example C# Actor implementation
-
-## Project Structure
+## 项目结构
 
 ```
-UCSharp/
-├── UCSharp.uplugin              # Plugin descriptor
-├── Source/
-│   ├── UCSharp/                 # Runtime module
-│   │   ├── UCSharp.Build.cs     # Build configuration
-│   │   ├── Public/UCSharp.h     # Module interface
-│   │   └── Private/UCSharp.cpp  # Module implementation
-│   └── UCSharpEditor/           # Editor module
-│       ├── UCSharpEditor.Build.cs
-│       ├── Public/UCSharpEditor.h
-│       └── Private/UCSharpEditor.cpp
-├── Managed/                     # C# code
-│   ├── UCSharp.Managed.csproj   # C# project file
-│   ├── Core/
-│   │   ├── UObject.cs           # Base UObject implementation
-│   │   └── Attributes.cs        # UFunction/UProperty attributes
-│   └── Examples/
-│       └── MyTestActor.cs       # Example C# Actor
-├── Binaries/DotNet/             # Compiled C# assemblies (generated)
-└── doc/                         # Technical documentation
+UCSharpProject/
+├── UCSharpTest.uproject          # 主项目文件
+├── Source/                       # C++源代码
+│   ├── UCSharpTest/             # 主游戏模块
+│   ├── UCSharpTestTarget.cs     # 游戏构建目标
+│   └── UCSharpTestEditor.Target.cs # 编辑器构建目标
+├── Config/                      # 项目配置文件
+│   ├── DefaultEngine.ini
+│   ├── DefaultGame.ini
+│   └── DefaultInput.ini
+├── Content/                     # 游戏内容资源
+│   └── Maps/
+│       └── TestLevel.umap       # 测试关卡
+└── GenerateProjectFiles.bat     # 项目文件生成脚本
 ```
 
-## Key Features Implemented
+## 使用说明
 
-### 1. UObject Integration
-- Base `UObject` class in C# with lifecycle management
-- Native pointer wrapping and object registry
-- Automatic disposal and cleanup
+### 1. 前置条件
 
-### 2. Attribute System
-- `[UFunction]` - Mark C# methods as Blueprint-callable functions
-- `[UProperty]` - Mark C# properties/fields as Blueprint-accessible
-- `[UClass]` - Mark C# classes as UE5 classes
-- Full attribute configuration support
+- 安装Unreal Engine 5.1或更高版本
+- 安装Visual Studio 2019/2022（包含C++开发工具）
+- 确保UCSharp插件已正确放置在项目根目录的上级目录中
 
-### 3. Example Implementation
-- `MyTestActor` - Demonstrates complete C# Actor implementation
-- Health system with damage/healing
-- Blueprint events and function calls
-- Property binding and editor integration
+### 2. 生成项目文件
 
-## Building the Project
+#### 方法一：使用UE5编辑器（推荐）
+1. 右键点击`UCSharpTest.uproject`文件
+2. 选择"Generate Visual Studio project files"
+3. 等待生成完成
 
-### Prerequisites
-- Unreal Engine 5.1 or later
-- Visual Studio 2022 with C++ workload
-- .NET 6.0 SDK or later
+#### 方法二：使用批处理脚本
+1. 运行`GenerateProjectFiles.bat`
+2. 按照提示操作
 
-### Build Steps
-
-1. **Generate Project Files**
-   ```bash
-   # In your UE5 project directory
-   <UE5_ROOT>/Engine/Binaries/DotNET/UnrealBuildTool.exe -projectfiles -project="YourProject.uproject" -game -rocket -progress
-   ```
-
-2. **Build C# Managed Library**
-   ```bash
-   cd UCSharp/Managed
-   dotnet build UCSharp.Managed.csproj
-   ```
-
-3. **Build UE5 Plugin**
-   - Open your project in Visual Studio
-   - Build the solution (this will compile the UCSharp modules)
-
-4. **Enable Plugin**
-   - Open your project in UE5 Editor
-   - Go to Edit → Plugins
-   - Find "UCSharp" and enable it
-   - Restart the editor
-
-## Usage Example
-
-### Creating a C# Actor
-
-```csharp
-using UCSharp.Core;
-
-[UClass(Blueprintable = true)]
-public class MyGameActor : AActor
-{
-    [UProperty(EditAnywhere = true, BlueprintReadWrite = true)]
-    public float Health { get; set; } = 100.0f;
-    
-    [UFunction(BlueprintCallable = true)]
-    public void TakeDamage(float damage)
-    {
-        Health -= damage;
-        if (Health <= 0)
-        {
-            OnActorDied();
-        }
-    }
-    
-    [UFunction(BlueprintImplementableEvent = true)]
-    protected virtual void OnActorDied()
-    {
-        // Blueprint can implement this
-    }
-}
+#### 方法三：手动使用UnrealBuildTool
+```bash
+"[UE5安装路径]\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe" -projectfiles -project="UCSharpTest.uproject" -game -rocket -progress
 ```
 
-### Using in Blueprint
-1. Create a new Blueprint class
-2. Set parent class to your C# class (e.g., "MyGameActor")
-3. Access C# properties in the Blueprint editor
-4. Call C# functions from Blueprint graphs
-5. Implement Blueprint events defined in C#
+### 3. 编译项目
 
-## Next Steps (Upcoming Milestones)
+1. 打开生成的`UCSharpTest.sln`解决方案文件
+2. 在Visual Studio中选择"Development Editor"配置
+3. 构建解决方案（Ctrl+Shift+B）
 
-### M1.2: Core Binding Prototype
-- Implement C++/C# interop framework
-- Basic function call marshalling
-- Property get/set operations
-- Native object creation/destruction
+### 4. 运行项目
 
-### M1.3: MVP Demonstration
-- Complete MyTestActor integration
-- Blueprint inheritance from C# classes
-- Function calls between Blueprint and C#
-- Property synchronization
+1. 在Visual Studio中设置`UCSharpTest`为启动项目
+2. 按F5运行，或者直接双击`UCSharpTest.uproject`文件
 
-## Technical Architecture
+### 5. 测试UCSharp插件
 
-The plugin uses a layered architecture:
+1. 在UE5编辑器中，检查"工具"菜单下是否有"C# Scripting"选项
+2. 尝试使用UCSharp插件的各项功能：
+   - 打开C#编辑器
+   - 创建C#脚本
+   - 构建C#脚本
+   - 重载C#程序集
 
-1. **C++ Native Layer**: Interfaces with UE5 engine systems
-2. **Interop Layer**: Marshals data between C++ and C#
-3. **C# Managed Layer**: Provides .NET-friendly APIs
-4. **Attribute System**: Enables declarative UE5 integration
+## 插件集成
 
-## Development Guidelines
+本测试项目已配置为使用UCSharp插件：
 
-### C# Code Style
-- Use PascalCase for public members
-- Apply appropriate UE5 attributes
-- Inherit from appropriate base classes (UObject, AActor, etc.)
-- Implement proper disposal patterns
+- 插件路径：`../`（相对于项目根目录）
+- 模块依赖：项目已添加对`UCSharp`模块的依赖
+- 构建配置：已配置适当的构建规则
 
-### Performance Considerations
-- Minimize cross-boundary calls
-- Use object pooling for frequently created objects
-- Cache native pointers when possible
-- Avoid boxing/unboxing in hot paths
+## 故障排除
 
-## Troubleshooting
+### 编译错误
 
-### Common Issues
-1. **Plugin not loading**: Check UE5 logs for .NET runtime initialization errors
-2. **C# classes not visible**: Ensure proper UClass attributes and build
-3. **Function calls failing**: Verify UFunction signatures and parameters
+1. **找不到UCSharp模块**
+   - 确保UCSharp插件位于正确的相对路径（项目上级目录）
+   - 检查插件的.uplugin文件是否存在且格式正确
 
-### Debug Information
-- Check Output Log for UCSharp messages
-- Enable verbose logging in UCSharp.cpp
-- Use Visual Studio debugger for C# code
-- Use UE5 debugger for C++ code
+2. **缺少.NET运行时**
+   - 确保已安装.NET 6.0 Runtime
+   - 检查UCSharp插件的托管代码是否已正确编译
 
-## Contributing
+3. **UE5路径问题**
+   - 确认UE5安装路径
+   - 更新GenerateProjectFiles.bat中的路径
 
-This is currently a prototype in active development. The codebase will evolve significantly as we implement the core binding mechanisms and complete the MVP.
+### 运行时错误
 
-## License
+1. **插件加载失败**
+   - 检查输出日志中的错误信息
+   - 确认所有依赖的DLL文件都存在
 
-TBD - License will be determined based on project requirements and distribution strategy.
+2. **C#脚本执行错误**
+   - 查看UE5编辑器的输出日志
+   - 检查C#代码的语法和逻辑错误
+
+## 开发建议
+
+1. **调试C++代码**：使用Visual Studio的调试功能
+2. **调试C#代码**：通过UE5编辑器的日志输出进行调试
+3. **性能分析**：使用UE5内置的性能分析工具
+4. **版本控制**：建议将生成的项目文件添加到.gitignore中
+
+## 下一步
+
+完成基础测试后，可以：
+
+1. 创建更复杂的C# Actor示例
+2. 测试蓝图与C#的互操作
+3. 验证性能和内存管理
+4. 测试编辑器工具的功能
+
+## 支持
+
+如遇到问题，请检查：
+
+1. UCSharp插件的文档
+2. UE5官方文档
+3. 项目的输出日志和错误信息

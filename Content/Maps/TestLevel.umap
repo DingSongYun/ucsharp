@@ -1,0 +1,8 @@
+This is a placeholder for the test level. In a real UE5 project, this would be a binary .umap file created by the Unreal Editor.
+To create a proper test level:
+1. Open the project in Unreal Editor
+2. Create a new level (File -> New Level)
+3. Add some basic geometry and lighting
+4. Save it as TestLevel.umap in the Content/Maps folder
+
+For now, this serves as a placeholder to establish the Content directory structure.

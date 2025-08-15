@@ -1,0 +1,30 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.1.0",
+	"FriendlyName": "UCSharp",
+	"Description": "C# scripting support for Unreal Engine 5",
+	"Category": "Scripting",
+	"CreatedBy": "UCSharp Team",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UCSharp",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "UCSharpEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+
+	]
+}

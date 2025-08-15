@@ -125,11 +125,22 @@ void FUCSharpEditorModule::RegisterMenuExtensions()
 		if (ToolsMenu)
 		{
 			FToolMenuSection& Section = ToolsMenu->FindOrAddSection("Programming");
-			Section.AddSubMenu(
-				"UCSharp",
-				LOCTEXT("UCSharpMenu", "C# Scripting"),
-				LOCTEXT("UCSharpMenuTooltip", "C# scripting tools and utilities"),
-				FNewToolMenuDelegate::CreateRaw(this, &FUCSharpEditorModule::CreateCSharpMenuEntries)
+			
+			// Add menu entries directly
+			Section.AddMenuEntry(
+				"OpenCSharpEditor",
+				LOCTEXT("OpenCSharpEditor", "Open C# Editor"),
+				LOCTEXT("OpenCSharpEditorTooltip", "Open the C# script editor"),
+				FSlateIcon(),
+				FUIAction(FExecuteAction::CreateRaw(this, &FUCSharpEditorModule::OnOpenCSharpEditor))
+			);
+			
+			Section.AddMenuEntry(
+				"CreateCSharpScript",
+				LOCTEXT("CreateCSharpScript", "Create C# Script"),
+				LOCTEXT("CreateCSharpScriptTooltip", "Create a new C# script"),
+				FSlateIcon(),
+				FUIAction(FExecuteAction::CreateRaw(this, &FUCSharpEditorModule::OnCreateCSharpScript))
 			);
 		}
 	}
@@ -140,18 +151,7 @@ void FUCSharpEditorModule::UnregisterMenuExtensions()
 	// Menu extensions are automatically cleaned up when the module shuts down
 }
 
-void FUCSharpEditorModule::CreateCSharpMenuEntries(FMenuBuilder& MenuBuilder)
-{
-	MenuBuilder.BeginSection("UCSharpActions", LOCTEXT("UCSharpActionsSection", "C# Actions"));
-	{
-		MenuBuilder.AddMenuEntry(FUCSharpEditorCommands::Get().OpenCSharpEditor);
-		MenuBuilder.AddMenuEntry(FUCSharpEditorCommands::Get().CreateCSharpScript);
-		MenuBuilder.AddSeparator();
-		MenuBuilder.AddMenuEntry(FUCSharpEditorCommands::Get().BuildCSharpScripts);
-		MenuBuilder.AddMenuEntry(FUCSharpEditorCommands::Get().ReloadCSharpAssembly);
-	}
-	MenuBuilder.EndSection();
-}
+
 
 void FUCSharpEditorModule::OnOpenCSharpEditor()
 {
@@ -196,27 +196,15 @@ void FUCSharpEditorModule::OnReloadCSharpAssembly()
 {
 	UE_LOG(LogUCSharpEditor, Log, TEXT("Reloading C# Assembly..."));
 
-	// Check if UCSharp runtime is available
-	if (!FUCSharpModule::IsAvailable())
-	{
-		UE_LOG(LogUCSharpEditor, Warning, TEXT("UCSharp runtime is not available"));
-		return;
-	}
-
-	FUCSharpModule& UCSharpModule = FUCSharpModule::Get();
-	if (!UCSharpModule.IsCSharpRuntimeInitialized())
-	{
-		UE_LOG(LogUCSharpEditor, Warning, TEXT("C# runtime is not initialized"));
-		return;
-	}
+	// Temporarily disabled - UCSharp runtime integration pending
+	UE_LOG(LogUCSharpEditor, Warning, TEXT("C# assembly reload temporarily disabled"));
 
 	// Show notification
-	FNotificationInfo Info(LOCTEXT("ReloadCSharpAssembly", "Reloading C# Assembly..."));
+	FNotificationInfo Info(LOCTEXT("ReloadCSharpAssembly", "C# Assembly reload temporarily disabled"));
 	Info.ExpireDuration = 3.0f;
 	FSlateNotificationManager::Get().AddNotification(Info);
 
-	// TODO: Implement assembly reload logic
-	// This would reload the compiled C# assembly
+	// TODO: Re-enable after UCSharp runtime is properly integrated
 }
 
 #undef LOCTEXT_NAMESPACE
