@@ -17,7 +17,7 @@ namespace UCSharp
         {
             try
             {
-                Console.WriteLine("=== UCSharp C# Scripting System ===");
+                Console.WriteLine("=== Hello, UCSharp !!! ===");
                 Console.WriteLine("Initializing C# scripting system...");
                 
                 // Initialize the script manager

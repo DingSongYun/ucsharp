@@ -4,6 +4,8 @@
 #include "Interfaces/IPluginManager.h"
 #include "HAL/PlatformFilemanager.h"
 #include "Misc/Paths.h"
+#include "UCSharpRuntime.h"
+#include "UCSharpLogs.h"
 
 // Temporarily disabled .NET includes for initial build
 // TODO: Re-enable after setting up proper .NET SDK
@@ -17,70 +19,88 @@
 #endif
 */
 
-DEFINE_LOG_CATEGORY(LogUCSharp);
-
 #define LOCTEXT_NAMESPACE "FUCSharpModule"
 
-void FUCSharpModule::StartupModule()
-{
-	UE_LOG(LogUCSharp, Log, TEXT("UCSharp module starting up..."));
 
-	// Initialize C# runtime (temporarily disabled)
-	// TODO: Re-enable after setting up proper .NET runtime libraries
-	/*
-	if (!InitializeCSharpRuntime())
+class FUCSharpModule : public IUCSharpModule
+{
+
+private:
+	/** Whether the C# runtime has been initialized */
+	bool bCSharpRuntimeInitialized = false;
+
+	FUCSharpRuntime RuntimeHandle;
+
+public:
+	virtual void StartupModule() override
 	{
-		UE_LOG(LogUCSharp, Error, TEXT("Failed to initialize C# runtime"));
+		UE_LOG(LogUCSharp, Log, TEXT("UCSharp module starting up..."));
+
+		// Initialize C# runtime (temporarily disabled)
+		if (!InitializeCSharpRuntime())
+		{
+			UE_LOG(LogUCSharp, Error, TEXT("Failed to initialize C# runtime"));
+		}
+		else
+		{
+			UE_LOG(LogUCSharp, Log, TEXT("C# runtime initialized successfully"));
+		}
+		UE_LOG(LogUCSharp, Log, TEXT("UCSharp module loaded"));
 	}
-	else
+
+	virtual void ShutdownModule() override
 	{
-		UE_LOG(LogUCSharp, Log, TEXT("C# runtime initialized successfully"));
+		UE_LOG(LogUCSharp, Log, TEXT("UCSharp module shutting down..."));
+
+		UE_LOG(LogUCSharp, Log, TEXT("UCSharp interop system shut down"));
+
+		// Shutdown C# runtime (temporarily disabled)
+		ShutdownCSharpRuntime();
 	}
-	*/
-	UE_LOG(LogUCSharp, Log, TEXT("UCSharp module loaded (C# runtime disabled for initial build)"));
-}
 
-void FUCSharpModule::ShutdownModule()
-{
-	UE_LOG(LogUCSharp, Log, TEXT("UCSharp module shutting down..."));
-
-	// Shutdown C# runtime (temporarily disabled)
-	// TODO: Re-enable after setting up proper .NET runtime libraries
-	// ShutdownCSharpRuntime();
-}
-
-FUCSharpModule& FUCSharpModule::Get()
-{
-	return FModuleManager::LoadModuleChecked<FUCSharpModule>("UCSharp");
-}
-
-bool FUCSharpModule::IsAvailable()
-{
-	return FModuleManager::Get().IsModuleLoaded("UCSharp");
-}
-
-bool FUCSharpModule::InitializeCSharpRuntime()
-{
-	// Temporarily disabled .NET runtime initialization
-	// TODO: Re-enable after setting up proper .NET SDK and headers
-	UE_LOG(LogUCSharp, Warning, TEXT("C# runtime initialization temporarily disabled"));
-	return false;
-}
-
-void FUCSharpModule::ShutdownCSharpRuntime()
-{
-#if PLATFORM_WINDOWS
-	if (bCSharpRuntimeInitialized && RuntimeHandle)
+	virtual bool IsCSharpRuntimeInitialized() const
 	{
-		// Close runtime handle
-		// Note: In a full implementation, we would call hostfxr_close here
-		RuntimeHandle = nullptr;
-		bCSharpRuntimeInitialized = false;
-		UE_LOG(LogUCSharp, Log, TEXT("C# runtime shutdown completed"));
+		return bCSharpRuntimeInitialized;
 	}
-#endif
+
+protected:
+	virtual bool InitializeCSharpRuntime() override
+	{
+		// Temporarily disabled .NET runtime initialization
+		// TODO: Re-enable after setting up proper .NET SDK and headers
+		UE_LOG(LogUCSharp, Warning, TEXT("C# runtime initialization temporarily disabled"));
+		RuntimeHandle.Initialize();
+		bCSharpRuntimeInitialized = true;
+		return false;
+	}
+
+	virtual void ShutdownCSharpRuntime() override
+	{
+		if (bCSharpRuntimeInitialized)
+		{
+			// Close runtime handle
+			bCSharpRuntimeInitialized = false;
+			RuntimeHandle.Shutdown();
+			UE_LOG(LogUCSharp, Log, TEXT("C# runtime shutdown completed"));
+		}
+	}
+}; // End of FUCSharpModule
+
+bool IUCSharpModule::IsAvailable()
+{
+	return FModuleManager::Get().IsModuleLoaded("UCSharpCore");
+}
+
+IUCSharpModule& IUCSharpModule::Get()
+{
+	return FModuleManager::LoadModuleChecked<FUCSharpModule>("UCSharpCore");
+}
+
+static FName GetPluginName()
+{
+	return TEXT("UCSharp");
 }
 
 #undef LOCTEXT_NAMESPACE
 
-IMPLEMENT_MODULE(FUCSharpModule, UCSharp)
+IMPLEMENT_MODULE(FUCSharpModule, UCSharpCore)

@@ -1,0 +1,37 @@
+{
+  "runtimeconfig": {
+    "tfm": "net8.0",
+    "framework": {
+      "name": "Microsoft.NETCore.App",
+      "version": "8.0.0"
+    },
+    "configProperties": {
+      "System.GC.Server": true,
+      "System.GC.Concurrent": true,
+      "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false
+    }
+  },
+  "ucsharp": {
+    "assemblySearchPaths": [
+      "Managed",
+      "Managed/Core",
+      "Managed/Examples"
+    ],
+    "entryAssembly": "UCSharp.Managed.dll",
+    "entryType": "UCSharp.Managed.UCSharpEntry",
+    "entryMethod": "Initialize",
+    "enableLogging": true,
+    "logLevel": "Information",
+    "enableDebugger": false,
+    "gcSettings": {
+      "serverGC": true,
+      "concurrentGC": true,
+      "retainVM": true
+    },
+    "interop": {
+      "enableNativeCallbacks": true,
+      "maxManagedCallStack": 1024,
+      "enableExceptionHandling": true
+    }
+  }
+}

@@ -2,24 +2,19 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
-
-DECLARE_LOG_CATEGORY_EXTERN(LogUCSharp, Log, All);
+#include "UCSharpInterop.h"
 
 /**
  * UCSharp Module Interface
  * Main module for C# scripting support in Unreal Engine 5
  */
-class FUCSharpModule : public IModuleInterface
+class IUCSharpModule : public IModuleInterface
 {
 public:
-	/** IModuleInterface implementation */
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
-
 	/**
 	 * Get the UCSharp module instance
 	 */
-	static FUCSharpModule& Get();
+	static IUCSharpModule& Get();
 
 	/**
 	 * Check if the UCSharp module is loaded
@@ -27,24 +22,23 @@ public:
 	static bool IsAvailable();
 
 	/**
-	 * Initialize the C# runtime
+	 * Get the plugin name
 	 */
-	bool InitializeCSharpRuntime();
-
-	/**
-	 * Shutdown the C# runtime
-	 */
-	void ShutdownCSharpRuntime();
+	static FName GetPluginName();
 
 	/**
 	 * Check if C# runtime is initialized
 	 */
-	bool IsCSharpRuntimeInitialized() const { return bCSharpRuntimeInitialized; }
+	virtual bool IsCSharpRuntimeInitialized() const = 0;
 
-private:
-	/** Whether the C# runtime has been initialized */
-	bool bCSharpRuntimeInitialized = false;
+protected:
+	/**
+	 * Initialize the C# runtime
+	 */
+	virtual bool InitializeCSharpRuntime() = 0;
 
-	/** Handle to the loaded .NET runtime */
-	void* RuntimeHandle = nullptr;
+	/**
+	 * Shutdown the C# runtime
+	 */
+	virtual void ShutdownCSharpRuntime() = 0;
 };
