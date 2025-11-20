@@ -1,4 +1,3 @@
-
 #include "UCSharpLibrary.h"
 #include "Interfaces/IPluginManager.h"
 #include "UCSharpLogs.h"

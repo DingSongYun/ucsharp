@@ -17,6 +17,7 @@ namespace UCSharp
         /// </summary>
 		public static void Initialize()
 		{
+			UCSharp.Core.ScriptManager.Initialize();
 		}
 
 		[UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvStdcall) })]

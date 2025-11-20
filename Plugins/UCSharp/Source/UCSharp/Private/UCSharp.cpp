@@ -1,5 +1,4 @@
 #include "UCSharp.h"
-#include "Core.h"
 #include "Modules/ModuleManager.h"
 #include "Interfaces/IPluginManager.h"
 #include "HAL/PlatformFilemanager.h"
@@ -95,6 +94,11 @@ IUCSharpModule& IUCSharpModule::Get()
 }
 
 static FName GetPluginName()
+{
+    return TEXT("UCSharp");
+}
+
+FName IUCSharpModule::GetPluginName()
 {
 	return TEXT("UCSharp");
 }

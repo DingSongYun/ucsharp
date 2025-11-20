@@ -107,6 +107,11 @@ static FString FindHostfxrPath()
 #endif
 }
 
+static void HOSTFXR_CALLTYPE HostfxrErrorWriter(const char_t* message)
+{
+	UE_LOG(LogUCSharp, Error, TEXT("hostfxr: %s"), message);
+}
+
 class FHostfxrProxy
 {
 private:
@@ -154,10 +159,16 @@ public:
 		init_for_config_fptr = reinterpret_cast <hostfxr_initialize_for_runtime_config_fn>(GetProcAddr(HostfxrHandle, "hostfxr_initialize_for_runtime_config"));
 		get_delegate_fptr = reinterpret_cast<hostfxr_get_runtime_delegate_fn>(GetProcAddr(HostfxrHandle, "hostfxr_get_runtime_delegate"));
 		close_fptr = reinterpret_cast<hostfxr_close_fn>(GetProcAddr(HostfxrHandle, "hostfxr_close"));
+		check(init_for_config_fptr && get_delegate_fptr && close_fptr);
+
+		auto set_error_writer = reinterpret_cast<hostfxr_set_error_writer_fn>(GetProcAddr(HostfxrHandle, "hostfxr_set_error_writer"));
+		if (set_error_writer)
+		{
+			set_error_writer((hostfxr_error_writer_fn)HostfxrErrorWriter);
+		}
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-		check(init_for_config_fptr && get_delegate_fptr && close_fptr);
 		return true;
 	}
 
@@ -191,7 +202,11 @@ public:
 
 	void CloseHostfxr()
 	{
-		close_fptr(HostContext);
+		if (HostContext)
+		{
+			close_fptr(HostContext);
+			HostContext = nullptr;
+		}
 	}
 
 	/** 加载程序集 */
@@ -242,20 +257,27 @@ bool FUCSharpRuntime::Initialize()
 		return false;
 	}
 
-	// 3. 加载程序集
-	typedef void(CORECLR_DELEGATE_CALLTYPE * hello_fn)(const char*);
+	// 3. 加载程序集并获取 InitializeUnmanaged 委托
+	typedef int (CORECLR_DELEGATE_CALLTYPE * init_fn)(void*, int32_t);
 
 	FString AssemblyPath = UCSharpLibrary::GetAssemblyPath();
 	AssemblyPath = FPaths::ConvertRelativePathToFull(AssemblyPath);
 	FPaths::MakePlatformFilename(AssemblyPath);
 	const char_t* TypeName = L"UCSharp.Program, UCSharp.Managed";
-	const char_t* MethodName = L"Hello";
+	const char_t* MethodName = L"InitializeUnmanaged";
 
-	hello_fn hello;
-	if (HostfxrProxy.LoadAssemblyAndGetFunction(*AssemblyPath, TypeName, L"Hello",
-		UNMANAGEDCALLERSONLY_METHOD, (void**)&hello))
+	init_fn InitFn = nullptr;
+	if (!HostfxrProxy.LoadAssemblyAndGetFunction(*AssemblyPath, TypeName, MethodName,
+		UNMANAGEDCALLERSONLY_METHOD, (void**)&InitFn))
 	{
-		hello("UCSharp");
+		return false;
+	}
+
+	int ManagedRet = InitFn(nullptr, 0);
+	if (ManagedRet != 0)
+	{
+		UE_LOG(LogUCSharp, Error, TEXT("Managed InitializeUnmanaged returned error: %d"), ManagedRet);
+		return false;
 	}
 
 	UE_LOG(LogUCSharp, Log, TEXT("Managed InitializeUnmanaged invoked successfully"));

@@ -7,7 +7,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <OutputPath>../Binaries/DotNet/</OutputPath>
+	<OutputPath>../Binaries/DotNet/net6.0/</OutputPath>
+	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>UCSharp.Managed</AssemblyName>
     <RootNamespace>UCSharp</RootNamespace>
   </PropertyGroup>
