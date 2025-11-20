@@ -15,4 +15,5 @@ public:
 	static FString GetPluginDirectory();
 	static FString GetConfigDirectory();
 	static FString GetRuntimeConfigPath();
+	static FString GetAssemblyPath();
 };

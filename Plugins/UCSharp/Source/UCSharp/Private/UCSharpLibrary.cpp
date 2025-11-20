@@ -31,5 +31,10 @@ FString UCSharpLibrary::GetConfigDirectory()
 
 FString UCSharpLibrary::GetRuntimeConfigPath()
 {
-	return FPaths::Combine(GetConfigDirectory(), TEXT("UCSharpRuntimeConfig.json"));
+	return FPaths::Combine(GetPluginDirectory(), TEXT("Binaries"), TEXT("DotNet"), TEXT("net6.0"), TEXT("UCSharp.Managed.runtimeconfig.json"));
+}
+
+FString UCSharpLibrary::GetAssemblyPath()
+{
+	return FPaths::Combine(GetPluginDirectory(), TEXT("Binaries"), TEXT("DotNet"), TEXT("net6.0"), TEXT("UCSharp.Managed.dll"));
 }
