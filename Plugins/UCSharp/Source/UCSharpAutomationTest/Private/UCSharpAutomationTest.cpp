@@ -17,29 +17,13 @@ void FUCSharpAutomationTestModule::ShutdownModule()
 {
 }
 
-// UCSharp测试基类实现
 void FUCSharpTestBase::SetUp()
 {
-	// 确保编辑器处于正确状态
-	if (GEditor)
-	{
-		GEditor->RequestEndPlayMap();
-	}
-	
-	// 等待垃圾回收完成
-	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+	// TODO: 初始化测试环境
 }
 
 void FUCSharpTestBase::TearDown()
 {
-	// 清理测试环境
-	if (GEditor)
-	{
-		GEditor->RequestEndPlayMap();
-	}
-	
-	// 强制垃圾回收
-	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
 }
 
 bool FUCSharpTestBase::IsUCSharpPluginLoaded() const
@@ -124,7 +108,6 @@ bool FUCSharpCoreTest::RunTest(const FString& Parameters)
 // UCSharp UObject绑定测试
 bool FUCSharpUObjectBindingTest::RunTest(const FString& Parameters)
 {
-	SetUp();
 	
 	// 测试UObject绑定机制
 	TestTrue("UCSharp should be loaded for UObject binding test", IsUCSharpPluginLoaded());
