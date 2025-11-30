@@ -9,6 +9,8 @@
 
 IMPLEMENT_MODULE(FUCSharpAutomationTestModule, UCSharpAutomationTest)
 
+extern "C" int32 __stdcall UCSharp_NativeAdd(int32 A, int32 B);
+
 void FUCSharpAutomationTestModule::StartupModule()
 {
 }
@@ -33,15 +35,11 @@ bool FUCSharpTestBase::IsUCSharpPluginLoaded() const
 
 bool FUCSharpTestBase::IsCSharpRuntimeInitialized() const
 {
-	// 检查UCSharp模块是否正确初始化
 	if (!IsUCSharpPluginLoaded())
 	{
 		return false;
 	}
-	
-	// 这里应该调用UCSharp模块的API来检查C#运行时状态
-	// 暂时返回true，实际实现需要根据UCSharp模块的具体API
-	return true;
+	return IUCSharpModule::IsAvailable() && IUCSharpModule::Get().IsCSharpRuntimeInitialized();
 }
 
 AActor* FUCSharpTestBase::CreateTestCSharpActor(UWorld* World, const FString& ActorClassName)
@@ -88,8 +86,9 @@ bool FUCSharpCoreTest::RunTest(const FString& Parameters)
 	// 测试1: 验证UCSharp插件加载
 	TestTrue("UCSharp plugin should be loaded", IsUCSharpPluginLoaded());
 	
-	// 测试2: 验证C#运行时初始化
 	TestTrue("C# runtime should be initialized", IsCSharpRuntimeInitialized());
+
+	TestEqual(TEXT("UCSharp_NativeAdd(2,3) == 5"), UCSharp_NativeAdd(2, 3), 5);
 	
 	// 测试3: 验证基础模块功能
 	if (IsUCSharpPluginLoaded())

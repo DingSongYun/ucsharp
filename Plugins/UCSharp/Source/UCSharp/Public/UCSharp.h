@@ -8,7 +8,7 @@
  * UCSharp Module Interface
  * Main module for C# scripting support in Unreal Engine 5
  */
-class IUCSharpModule : public IModuleInterface
+class UCSHARP_API IUCSharpModule : public IModuleInterface
 {
 public:
 	/**

@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "UCSharpGenerator.ubtplugin": {
+      "commandName": "Project",
+      "commandLineArgs": "D:/Games/UE_5.7/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe -Mode=UnrealHeaderTool -Target=\"UCSharpProjectEditor Win64 DebugGame -Project=\\\"E:/H73/ucsharp/UCSharpProject.uproject\\\"\"",
+      "workingDirectory": "E:\\H73\\ucsharp"
+    },
+    "RunUHT": {
+      "commandName": "Executable",
+      "executablePath": "D:/Games/UE_5.7/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe",
+      "commandLineArgs": "-Mode=UnrealHeaderTool -Target=\"UCSharpProjectEditor Win64 DebugGame -Project=\\\"E:/H73/ucsharp/UCSharpProject.uproject\\\"\"",
+      "workingDirectory": "E:\\H73\\ucsharp"
+    }
+  }
+}

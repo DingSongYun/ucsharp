@@ -23,6 +23,16 @@ REM Get project path
 set PROJECT_DIR=%~dp0
 set PROJECT_FILE=%PROJECT_DIR%UCSharpProject.uproject
 
+echo Building UCSharpGenerator UHT plugin assembly...
+pushd "%PROJECT_DIR%Plugins\UCSharp\Source\UCSharpGenerator"
+dotnet build -c Development /p:EngineDir="%UE_ENGINE_PATH%\Engine"
+if %ERRORLEVEL% neq 0 (
+    popd
+    echo Error: UCSharpGenerator build failed
+    exit /b %ERRORLEVEL%
+)
+popd
+
 REM Check if engine path exists
 if not exist "%BUILD_TOOL%" (
     echo Error: Cannot find UE build tool: %BUILD_TOOL%

@@ -1,10 +1,50 @@
 #include "UCSharpInterop.h"
 #include "Engine/Engine.h"
+#include "TestActor.h"
 #include "UObject/UObjectGlobals.h"
 #include "UObject/Package.h"
 #include "HAL/PlatformFilemanager.h"
 #include "Misc/Paths.h"
 #include "UCSharpLogs.h"
+#include "UObject/UnrealType.h"
+#include "UObject/PropertyAccessUtil.h"
+#include "UCSharpPropertyRegistry.h"
+
+using namespace UCSharpInterop;
+
+
+namespace
+{
+	constexpr uint32 HashLiteral(const TCHAR* Text, uint32 Hash = 2166136261u)
+	{
+		return (*Text == 0) ? Hash : HashLiteral(Text + 1, (Hash ^ uint32(*Text)) * 16777619u);
+	}
+
+	constexpr uint32 MakePropertyId(const TCHAR* ClassName, const TCHAR* PropertyName)
+	{
+		return HashLiteral(PropertyName, HashLiteral(ClassName));
+	}
+
+	void RegisterPropertyMetadata()
+	{
+		IUCSharpInterop* Interop = UCSharpInterop::GetInterop();
+		Interop->GetPropertyRegistry().RegisterProperty(
+			ATestActor::StaticClass(),
+			MakePropertyId(TEXT("ATestActor"), TEXT("Health")),
+			TEXT("Health"));
+
+		Interop->GetPropertyRegistry().RegisterProperty(
+			ATestActor::StaticClass(),
+			MakePropertyId(TEXT("ATestActor"), TEXT("Speed")),
+			TEXT("Speed"));
+
+		Interop->GetPropertyRegistry().RegisterProperty(
+			ATestActor::StaticClass(),
+			MakePropertyId(TEXT("ATestActor"), TEXT("Label")),
+			TEXT("Label"));
+	}
+}
+
 
 /**
  * Default implementation of the UCSharp interop interface
@@ -24,6 +64,7 @@ public:
 	virtual bool RegisterTypeMapping(const FString& NativeTypeName, const FString& ManagedTypeName) override;
 	virtual void* CallManagedMethod(UCSharpInterop::ManagedObjectHandle Instance, const FString& MethodName, void** Args, int32 ArgCount) override;
 	virtual void* CallNativeMethod(UCSharpInterop::NativeObjectHandle Instance, const FString& MethodName, void** Args, int32 ArgCount) override;
+	virtual FUCSharpPropertyRegistry& GetPropertyRegistry() { return PropertyRegistry; }
 
 private:
 	/** Whether the interop system is initialized */
@@ -40,6 +81,8 @@ private:
 
 	/** Object binding registry */
 	TArray<UCSharpInterop::FObjectBinding> ObjectBindings;
+
+	FUCSharpPropertyRegistry PropertyRegistry;
 
 	/** Next available handle ID */
 	uint64 NextHandleId;
@@ -97,6 +140,8 @@ bool FUCSharpInteropImpl::Initialize()
 
 	bIsInitialized = true;
 	UE_LOG(LogUCSharp, Log, TEXT("UCSharp interop system initialized successfully"));
+
+	RegisterPropertyMetadata();
 	return true;
 }
 
@@ -249,6 +294,11 @@ void FUCSharpInteropImpl::CleanupInvalidBindings()
 	}
 }
 
+extern "C" UCSHARP_API int32 __stdcall UCSharp_NativeAdd(int32 A, int32 B)
+{
+	return A + B;
+}
+
 // Global interop instance
 static TUniquePtr<FUCSharpInteropImpl> GUCSharpInterop;
 
@@ -272,4 +322,174 @@ namespace UCSharpInterop
 			GUCSharpInterop.Reset();
 		}
 	}
+}
+
+template <typename PropertyType, typename ValueType>
+int32 SetFastValue(UObject* Obj, uint32 PropertyId, ValueType InValue, EInteropType ExpectedType)
+{
+	if (!Obj)
+	{
+		return -1;
+	}
+
+	IUCSharpInterop* Interop = GetInterop();
+	check(Interop);
+	const FUSharpPropertyDesc* Desc = Interop->GetPropertyRegistry().FindProperty(Obj->GetClass(), PropertyId);
+	if (!Desc || Desc->Type != ExpectedType)
+	{
+		return -2;
+	}
+
+	const PropertyType* TypedProperty = CastField<PropertyType>(Desc->Property);
+	if (!TypedProperty)
+	{
+		return -3;
+	}
+
+	void* Dest = TypedProperty->ContainerPtrToValuePtr<void>(Obj);
+	TypedProperty->SetPropertyValue(Dest, InValue);
+	return 0;
+}
+
+template <typename PropertyType, typename ValueType>
+int32 GetFastValue(UObject* Obj, uint32 PropertyId, ValueType& OutValue, EInteropType ExpectedType)
+{
+	if (!Obj)
+	{
+		return -1;
+	}
+
+	IUCSharpInterop* Interop = GetInterop();
+	check(Interop);
+	const FUSharpPropertyDesc* Desc = Interop->GetPropertyRegistry().FindProperty(Obj->GetClass(), PropertyId);
+	if (!Desc || Desc->Type != ExpectedType)
+	{
+		return -2;
+	}
+
+	const PropertyType* TypedProperty = CastField<PropertyType>(Desc->Property);
+	if (!TypedProperty)
+	{
+		return -3;
+	}
+
+	void* Src = TypedProperty->ContainerPtrToValuePtr<void>(Obj);
+	OutValue = TypedProperty->GetPropertyValue(Src);
+	return 0;
+}
+
+extern "C" UCSHARP_API int32 __stdcall Native_SetIntProperty(UObject* Obj, uint32 PropertyId, int32 Value)
+{
+	return SetFastValue<FIntProperty>(Obj, PropertyId, Value, EInteropType::Int32);
+}
+
+extern "C" UCSHARP_API int32 __stdcall Native_GetIntProperty(UObject* Obj, uint32 PropertyId, int32* OutValue)
+{
+	if (!OutValue)
+	{
+		return -10;
+	}
+	return GetFastValue<FIntProperty>(Obj, PropertyId, *OutValue, EInteropType::Int32);
+}
+
+extern "C" UCSHARP_API int32 __stdcall Native_SetFloatProperty(UObject* Obj, uint32 PropertyId, float Value)
+{
+	return SetFastValue<FFloatProperty>(Obj, PropertyId, Value, EInteropType::Float);
+}
+
+extern "C" UCSHARP_API int32 __stdcall Native_GetFloatProperty(UObject* Obj, uint32 PropertyId, float* OutValue)
+{
+	if (!OutValue)
+	{
+		return -10;
+	}
+	return GetFastValue<FFloatProperty>(Obj, PropertyId, *OutValue, EInteropType::Float);
+}
+
+extern "C" UCSHARP_API int32 __stdcall Native_SetBoolProperty(UObject* Obj, uint32 PropertyId, int32 Value)
+{
+	const bool bValue = Value != 0;
+	return SetFastValue<FBoolProperty>(Obj, PropertyId, bValue, EInteropType::Bool);
+}
+
+extern "C" UCSHARP_API int32 __stdcall Native_GetBoolProperty(UObject* Obj, uint32 PropertyId, int32* OutValue)
+{
+	if (!OutValue)
+	{
+		return -10;
+	}
+
+	bool bValue = false;
+	const int32 Result = GetFastValue<FBoolProperty>(Obj, PropertyId, bValue, EInteropType::Bool);
+	if (Result == 0)
+	{
+		*OutValue = bValue ? 1 : 0;
+	}
+	return Result;
+}
+
+extern "C" UCSHARP_API int32 __stdcall Native_SetStringProperty(UObject* Obj, uint32 PropertyId, const wchar_t* Value)
+{
+	FString Temp(Value ? Value : TEXT(""));
+	return SetFastValue<FStrProperty>(Obj, PropertyId, Temp, EInteropType::String);
+}
+
+extern "C" UCSHARP_API int32 __stdcall Native_SetObjectProperty(UObject* Obj, uint32 PropertyId, UObject* Value)
+{
+	return SetFastValue<FObjectProperty>(Obj, PropertyId, Value, EInteropType::Object);
+}
+
+extern "C" UCSHARP_API int32 __stdcall Native_GetObjectProperty(UObject* Obj, uint32 PropertyId, UObject** OutValue)
+{
+	if (!OutValue)
+	{
+		return -10;
+	}
+	return GetFastValue<FObjectProperty>(Obj, PropertyId, *OutValue, EInteropType::Object);
+}
+
+
+extern "C" UCSHARP_API int32 __stdcall Native_CallFunction(UObject* Obj, const wchar_t* FuncName, const void* ArgsData, const int32* ArgTypes, const int32* ArgSizes, int32 ArgCount, void* RetData, int32 RetType, int32 RetSize)
+{
+	if (!Obj || !FuncName) return -1;
+	UFunction* Func = Obj->FindFunction(FName(FuncName));
+	if (!Func) return -2;
+	uint8* Params = (uint8*)FMemory::Malloc(Func->ParmsSize);
+	FMemory::Memzero(Params, Func->ParmsSize);
+	const uint8* Cursor = (const uint8*)ArgsData;
+	int32 Index = 0;
+	for (TFieldIterator<FProperty> It(Func); It; ++It)
+	{
+		FProperty* Prop = *It;
+		if (!Prop->HasAnyPropertyFlags(CPF_Parm) || Prop->HasAnyPropertyFlags(CPF_ReturnParm)) continue;
+		void* Dest = Prop->ContainerPtrToValuePtr<void>(Params);
+		if (Index >= ArgCount) { FMemory::Free(Params); return -3; }
+		int32 Sz = ArgSizes[Index];
+		int32 Tc = ArgTypes[Index];
+		if (CastField<FIntProperty>(Prop)) { *reinterpret_cast<int32*>(Dest) = *reinterpret_cast<const int32*>(Cursor); }
+		else if (CastField<FFloatProperty>(Prop)) { *reinterpret_cast<float*>(Dest) = *reinterpret_cast<const float*>(Cursor); }
+		else if (CastField<FBoolProperty>(Prop)) { bool V = (*reinterpret_cast<const int32*>(Cursor)) != 0; *reinterpret_cast<uint8*>(Dest) = V ? 1 : 0; }
+		else if (auto PObj = CastField<FObjectProperty>(Prop)) { UObject* V = *reinterpret_cast<UObject* const*>(Cursor); PObj->SetObjectPropertyValue(Dest, V); }
+		else if (auto PStr = CastField<FStrProperty>(Prop)) { const wchar_t* S = reinterpret_cast<const wchar_t*>(Cursor); FString FS(S); PStr->SetPropertyValue(Dest, FS); }
+		else { FMemory::Free(Params); return -4; }
+		Cursor += Sz;
+		Index++;
+	}
+	Obj->ProcessEvent(Func, Params);
+	for (TFieldIterator<FProperty> It(Func); It; ++It)
+	{
+		FProperty* Prop = *It;
+		if (Prop->HasAnyPropertyFlags(CPF_ReturnParm))
+		{
+			void* Src = Prop->ContainerPtrToValuePtr<void>(Params);
+			if (CastField<FIntProperty>(Prop)) { if (RetData) *reinterpret_cast<int32*>(RetData) = *reinterpret_cast<int32*>(Src); }
+			else if (CastField<FFloatProperty>(Prop)) { if (RetData) *reinterpret_cast<float*>(RetData) = *reinterpret_cast<float*>(Src); }
+			else if (CastField<FBoolProperty>(Prop)) { if (RetData) *reinterpret_cast<int32*>(RetData) = (*reinterpret_cast<uint8*>(Src)) ? 1 : 0; }
+			else if (auto PObj = CastField<FObjectProperty>(Prop)) { if (RetData) *reinterpret_cast<UObject**>(RetData) = PObj->GetObjectPropertyValue(Src); }
+			else { }
+			break;
+		}
+	}
+	FMemory::Free(Params);
+	return 0;
 }

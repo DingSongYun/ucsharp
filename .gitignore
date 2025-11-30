@@ -1,5 +1,8 @@
 # Visual Studio files
 .vs/
+Plugins/UCSharp/Source/UCSharpGenerator/.vs/
+Plugins/UCSharp/Source/UCSharpGenerator/bin/
+Plugins/UCSharp/Source/UCSharpGenerator/obj/
 *.user
 *.suo
 *.sdf

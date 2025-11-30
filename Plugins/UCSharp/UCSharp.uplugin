@@ -18,7 +18,7 @@
 		{
 			"Name": "UCSharp",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PreDefault"
 		},
 		{
 			"Name": "UCSharpEditor",

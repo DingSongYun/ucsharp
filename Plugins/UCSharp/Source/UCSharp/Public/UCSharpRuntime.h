@@ -13,7 +13,4 @@ public:
 	 */
 	bool Initialize();
 	void Shutdown();
-
-private:
-	void GetRuntimeConfigPath();
 };

@@ -6,6 +6,9 @@ public class UCSharp : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
+		// 定义一些全局变量，供Export中使用
+		PublicDefinitions.Add("UCSHARP_PLUGIN_PATH=" + PluginDirectory.Replace("\\", "/"));
+
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
@@ -47,17 +50,5 @@ public class UCSharp : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 		);
-
-		// .NET Core hosting support (temporarily disabled for initial build)
-		// TODO: Re-enable after setting up proper .NET runtime libraries
-		/*
-		if (Target.Platform == UnrealTargetPlatform.Win64)
-		{
-			// Add .NET Core runtime libraries
-			PublicAdditionalLibraries.Add("nethost.lib");
-			PublicDelayLoadDLLs.Add("hostfxr.dll");
-			RuntimeDependencies.Add("$(TargetOutputDir)/hostfxr.dll");
-		}
-		*/
 	}
 }

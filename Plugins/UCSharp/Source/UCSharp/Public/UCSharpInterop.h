@@ -6,6 +6,7 @@
 
 // Forward declarations
 class UObject;
+class IUCSharpInterop;
 
 /**
  * Core interop types for C++/C# communication
@@ -52,7 +53,8 @@ namespace UCSharpInterop
 		String,
 		Object,
 		Array,
-		Struct
+		Struct,
+		Unsupported
 	};
 
 	/**
@@ -113,7 +115,17 @@ namespace UCSharpInterop
 			, bIsValid(false)
 		{}
 	};
-}
+
+	/**
+	 * 属性描述符
+	 */
+	 struct FUSharpPropertyDesc
+	 {
+		uint32 PropertyId = 0;
+		const FProperty* Property = nullptr;
+		EInteropType Type = EInteropType::Unsupported;
+	 };
+} // namespace UCSharpInterop
 
 /**
  * Core interop interface for C++/C# communication
@@ -162,20 +174,18 @@ public:
 	 * Call a native method from managed code
 	 */
 	virtual void* CallNativeMethod(UCSharpInterop::NativeObjectHandle Instance, const FString& MethodName, void** Args, int32 ArgCount) = 0;
+
+	virtual struct FUCSharpPropertyRegistry& GetPropertyRegistry() = 0;
 };
 
-/**
- * Global interop access functions
- */
 namespace UCSharpInterop
 {
 	/**
 	 * Get the global interop instance
 	 */
 	UCSHARP_API IUCSharpInterop* GetInterop();
-
 	/**
 	 * Destroy the global interop instance
 	 */
 	UCSHARP_API void DestroyInterop();
-}
+} // namespace UCSharpInterop
